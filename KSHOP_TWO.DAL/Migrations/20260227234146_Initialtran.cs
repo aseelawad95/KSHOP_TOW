@@ -1,0 +1,58 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace KSHOP_TWO.DAL.Migrations
+{
+    /// <inheritdoc />
+    public partial class Initialtran : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "Name",
+                table: "Categories");
+
+            migrationBuilder.CreateTable(
+                name: "CategoryTranslation",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Language = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryTranslation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CategoryTranslation_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryTranslation_CategoryId",
+                table: "CategoryTranslation",
+                column: "CategoryId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "CategoryTranslation");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Name",
+                table: "Categories",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+        }
+    }
+}

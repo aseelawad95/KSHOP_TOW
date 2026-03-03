@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+
+namespace KSHOP_TWO.DAL.Models
+{
+    public class CategoryTranslation
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Language { get; set; } = "en";
+
+        public int CategoryId { get; set; }
+
+        [JsonIgnore]
+        public Category category { get; set; }
+    }
+}
