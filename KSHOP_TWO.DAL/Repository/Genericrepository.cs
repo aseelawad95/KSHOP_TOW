@@ -27,9 +27,13 @@ namespace KSHOP_TWO.DAL.Repository
             return entity;
         }
 
-        public Task<T> CreateAsync(Category categpry)
+      
+
+        public async Task<bool> DeleteAsync(T entity)
         {
-            throw new NotImplementedException();
+             _context.Remove(entity);
+          var affected =  await _context.SaveChangesAsync();
+            return affected > 0;
         }
 
         public async Task<List<T>> GetAllAsync(string[]? includes = null)
@@ -46,7 +50,7 @@ namespace KSHOP_TWO.DAL.Repository
         }
 
 
-        public async Task<T> GetOne(Expression<Func<T, bool>> filter,string[]? includes = null)
+        public async Task<T?> GetOne(Expression<Func<T, bool>> filter,string[]? includes = null)
         {
             IQueryable<T> query = _context.Set<T>();
             if (includes != null)
@@ -59,7 +63,11 @@ namespace KSHOP_TWO.DAL.Repository
             return await query.FirstOrDefaultAsync(filter);
         }
 
-
-
+        public async Task<T> UpdateAsync(T category)
+        {
+             _context.Update(category);
+           await _context.SaveChangesAsync();
+            return category;
+        }
     }
 }

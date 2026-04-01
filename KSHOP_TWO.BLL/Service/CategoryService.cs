@@ -26,9 +26,20 @@ namespace KSHOP_TWO.BLL.Service
             return category.Adapt<CategoryResponse>();
         }
 
+        public async Task<bool> DeleteCategory(int id)
+        {
+            var category =await _categoryrepository.GetOne(c => c.Id == id);
+            if (category == null) return false;
+            return await _categoryrepository.DeleteAsync(category);
+        }
+
         public async Task<List<CategoryResponse>> GetAll()
         {
-            var categories =await _categoryrepository.GetAllAsync(new string[] {nameof(Category.Translations)});
+            var categories =await _categoryrepository.GetAllAsync(new string[] {nameof(Category.Translations),
+                nameof(Category.CreatedBy)
+            });
+
+            //categories.BuildAdapter().AddParameters("lang", lang).AdaptToType<List<CategoryResponse>>()
 
             return categories.Adapt<List<CategoryResponse>>();
         }
@@ -39,5 +50,29 @@ namespace KSHOP_TWO.BLL.Service
             return category.Adapt<CategoryResponse>();
             
         }
+
+       public async Task<CategoryResponse> UpdateAsync(int id, CategoryRequest request)
+{
+    var category = await _categoryrepository
+        .GetOne(c => c.Id == id, new string[] {nameof(Category.Translations)});
+
+    if (category == null)
+        return null;
+
+    foreach (var translation in request.Translations)
+    {
+        var existingTranslation = category.Translations
+            .FirstOrDefault(t => t.Language == translation.Language);
+
+        if (existingTranslation == null)
+            return null;
+
+        existingTranslation.Name = translation.Name;
+    }
+
+            await _categoryrepository.UpdateAsync(category);
+
+            return category.Adapt<CategoryResponse>();
+}
     }
 }

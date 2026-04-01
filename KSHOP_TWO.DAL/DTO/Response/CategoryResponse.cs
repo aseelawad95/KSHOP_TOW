@@ -9,6 +9,8 @@ namespace KSHOP_TWO.DAL.DTO.Response
 {
     public class CategoryResponse
     {
-        public List<CategoryTranslationResponse> Translations { get; set; }
+        public int category_id { get; set; }
+        //public List<CategoryTranslationResponse> Translations { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -18,5 +18,9 @@ namespace KSHOP_TWO.BLL.Service
 
         Task<CategoryResponse> GetCategory(Expression<Func<Category, bool>> filter);
 
+        Task<bool> DeleteCategory(int id);
+
+        Task<CategoryResponse> UpdateAsync(int id, CategoryRequest request);
+
     }
 }

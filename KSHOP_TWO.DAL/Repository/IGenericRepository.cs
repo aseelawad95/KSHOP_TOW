@@ -14,6 +14,10 @@ namespace KSHOP_TWO.DAL.Repository
 
         Task<T> CreateAsync(T categpry);
 
-        Task<T> GetOne(Expression<Func<T, bool>> filter, string[]? includes = null);
+        Task<T?> GetOne(Expression<Func<T, bool>> filter, string[]? includes = null);
+
+        Task<bool> DeleteAsync(T entity);
+
+        Task<T> UpdateAsync(T category);
     }
 }
