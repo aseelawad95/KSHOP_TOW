@@ -6,17 +6,12 @@ using System.Threading.Tasks;
 
 namespace KSHOP_TWO.DAL.DTO.Response
 {
-    public class ProductResponse
+    public class BrandResponse
     {
         public int Id { get; set; }
 
-        public string UserCreated { get; set; }
         public string Name { get; set; }
 
-        public decimal Price { get; set; }
-
-        public int Quantity { get; set; }
-
-        public string MainImage { get; set; }
+        public string Logo { get; set; }
     }
 }

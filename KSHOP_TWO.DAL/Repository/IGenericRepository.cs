@@ -18,6 +18,6 @@ namespace KSHOP_TWO.DAL.Repository
 
         Task<bool> DeleteAsync(T entity);
 
-        Task<T> UpdateAsync(T category);
+        Task<bool> UpdateAsync(T entity);
     }
 }

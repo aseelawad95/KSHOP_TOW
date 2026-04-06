@@ -28,5 +28,16 @@ namespace KSHOP_TWO.BLL.Service
 
             return fileName;
         }
+
+        public void Delete(string fileName)
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "images", fileName);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ using KSHOP_TWO.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KSHOP_TWO.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260405215016_AddAuditableFieldsj")]
+    partial class AddAuditableFieldsj
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -129,7 +132,7 @@ namespace KSHOP_TWO.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BrandId")
+                    b.Property<int?>("BrandId")
                         .HasColumnType("int");
 
                     b.Property<string>("Language")
@@ -422,13 +425,9 @@ namespace KSHOP_TWO.DAL.Migrations
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.BrandTranslation", b =>
                 {
-                    b.HasOne("KSHOP_TWO.DAL.Models.Brand", "Brand")
+                    b.HasOne("KSHOP_TWO.DAL.Models.Brand", null)
                         .WithMany("Translations")
-                        .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Brand");
+                        .HasForeignKey("BrandId");
                 });
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>

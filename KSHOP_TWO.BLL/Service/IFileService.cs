@@ -10,5 +10,6 @@ namespace KSHOP_TWO.BLL.Service
     public interface IFileService
     {
         Task<string?> UploadAsync(IFormFile file);
+        void Delete(string fileName);
     }
 }

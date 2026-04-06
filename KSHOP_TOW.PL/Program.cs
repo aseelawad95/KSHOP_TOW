@@ -81,7 +81,10 @@ namespace KSHOP_TOW.PL
             builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddScoped< IProductService, ProductService > ();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            
+            builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddScoped<IBrandRepository, BrandRepository>();
+
+
             builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = true;
@@ -145,9 +148,9 @@ namespace KSHOP_TOW.PL
             app.UseHttpsRedirection();
 
             //
-
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
+            
 
 
             app.UseStaticFiles();

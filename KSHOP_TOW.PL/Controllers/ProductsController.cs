@@ -27,7 +27,21 @@ namespace KSHOP_TOW.PL.Controllers
         public async Task<IActionResult> Index()
         {
               var products = await _productService.GetAllProducts();
+
             return Ok(products);
+        }
+
+        [HttpGet("{id}")]
+
+        public async Task<IActionResult> GetOneProduct(int id)
+        {
+            var product = await _productService.GetProduct(p=> p.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(product);
         }
 
 
@@ -37,6 +51,36 @@ namespace KSHOP_TOW.PL.Controllers
         public async Task<IActionResult> CreateProduct([FromForm] ProductRequest request)
         {
             await _productService.CreateProduct(request);
+            return Ok();
+
+        }
+
+        [HttpPatch("{id}")]
+        [Authorize]
+
+        public async Task<IActionResult> UpdateProduct(int id,[FromForm] ProductUpdateRequest request)
+        {
+         var updated  = await _productService.UpdateProduct(id,request);
+            if (!updated)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
+
+        }
+
+
+        [HttpDelete("{id}")]
+        [Authorize]
+
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+          var deleted =   await _productService.DeleteProduct(id);
+            if (!deleted)
+            {
+                return BadRequest();
+            }
             return Ok();
 
         }

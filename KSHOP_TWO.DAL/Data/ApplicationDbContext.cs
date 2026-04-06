@@ -23,6 +23,11 @@ namespace KSHOP_TWO.DAL.Data
         public DbSet<Product> Products { get; set; }
 
         public DbSet<ProductTranslation> ProductTranslation { get; set; }
+
+        public DbSet<Brand> Brands { get; set; }
+
+        public DbSet<BrandTranslation> BrandTranslation { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
             IHttpContextAccessor httpContextAccessor  
             ) : base(options)
@@ -37,10 +42,10 @@ namespace KSHOP_TWO.DAL.Data
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<Category>()
-    .HasOne(p => p.CreatedBy)
-    .WithMany()
-    .HasForeignKey(p => p.CreatedById)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(p => p.CreatedBy)
+                .WithMany()
+                .HasForeignKey(p => p.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Category>()
                 .HasOne(p => p.UpdatedBy)
@@ -59,6 +64,14 @@ namespace KSHOP_TWO.DAL.Data
                 .WithMany()
                 .HasForeignKey(p => p.UpdatedById)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<BrandTranslation>()
+                .HasOne(bt => bt.Brand)
+                .WithMany(b => b.Translations)
+                .HasForeignKey(bt => bt.BrandId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
         }
 
 

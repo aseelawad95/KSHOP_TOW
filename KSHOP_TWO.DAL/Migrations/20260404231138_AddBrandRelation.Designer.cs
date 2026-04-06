@@ -4,6 +4,7 @@ using KSHOP_TWO.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KSHOP_TWO.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404231138_AddBrandRelation")]
+    partial class AddBrandRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,7 +115,11 @@ namespace KSHOP_TWO.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Logo")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("logo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -129,20 +136,11 @@ namespace KSHOP_TWO.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BrandId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BrandId");
 
                     b.ToTable("BrandTranslation");
                 });
@@ -420,17 +418,6 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("KSHOP_TWO.DAL.Models.BrandTranslation", b =>
-                {
-                    b.HasOne("KSHOP_TWO.DAL.Models.Brand", "Brand")
-                        .WithMany("Translations")
-                        .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Brand");
-                });
-
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>
                 {
                     b.HasOne("KSHOP_TWO.DAL.Models.ApplicationUser", "CreatedBy")
@@ -554,8 +541,6 @@ namespace KSHOP_TWO.DAL.Migrations
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Brand", b =>
                 {
-                    b.Navigation("Translations");
-
                     b.Navigation("products");
                 });
 

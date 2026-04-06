@@ -4,6 +4,7 @@ using KSHOP_TWO.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KSHOP_TWO.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260402215300_productdb")]
+    partial class productdb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,49 +107,6 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Brand", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Logo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Brands");
-                });
-
-            modelBuilder.Entity("KSHOP_TWO.DAL.Models.BrandTranslation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BrandId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BrandId");
-
-                    b.ToTable("BrandTranslation");
-                });
-
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -210,9 +170,6 @@ namespace KSHOP_TWO.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BrandId")
-                        .HasColumnType("int");
-
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
@@ -245,8 +202,6 @@ namespace KSHOP_TWO.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
 
@@ -420,17 +375,6 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("KSHOP_TWO.DAL.Models.BrandTranslation", b =>
-                {
-                    b.HasOne("KSHOP_TWO.DAL.Models.Brand", "Brand")
-                        .WithMany("Translations")
-                        .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Brand");
-                });
-
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>
                 {
                     b.HasOne("KSHOP_TWO.DAL.Models.ApplicationUser", "CreatedBy")
@@ -461,10 +405,6 @@ namespace KSHOP_TWO.DAL.Migrations
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Product", b =>
                 {
-                    b.HasOne("KSHOP_TWO.DAL.Models.Brand", "Brand")
-                        .WithMany("products")
-                        .HasForeignKey("BrandId");
-
                     b.HasOne("KSHOP_TWO.DAL.Models.Category", "Category")
                         .WithMany("products")
                         .HasForeignKey("CategoryId")
@@ -480,8 +420,6 @@ namespace KSHOP_TWO.DAL.Migrations
                         .WithMany()
                         .HasForeignKey("UpdatedById")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Brand");
 
                     b.Navigation("Category");
 
@@ -550,13 +488,6 @@ namespace KSHOP_TWO.DAL.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Brand", b =>
-                {
-                    b.Navigation("Translations");
-
-                    b.Navigation("products");
                 });
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>

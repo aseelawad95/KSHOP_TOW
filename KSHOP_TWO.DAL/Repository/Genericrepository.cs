@@ -63,11 +63,11 @@ namespace KSHOP_TWO.DAL.Repository
             return await query.FirstOrDefaultAsync(filter);
         }
 
-        public async Task<T> UpdateAsync(T category)
+        public async Task<bool> UpdateAsync(T entity)
         {
-             _context.Update(category);
-           await _context.SaveChangesAsync();
-            return category;
+             _context.Update(entity);
+        var affected =    await _context.SaveChangesAsync();
+            return affected > 0;
         }
     }
 }

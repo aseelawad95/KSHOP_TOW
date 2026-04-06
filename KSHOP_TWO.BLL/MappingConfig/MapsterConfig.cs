@@ -1,4 +1,5 @@
-﻿using KSHOP_TWO.DAL.DTO.Response;
+﻿using KSHOP_TWO.DAL.DTO.Request;
+using KSHOP_TWO.DAL.DTO.Response;
 using KSHOP_TWO.DAL.Models;
 using Mapster;
 using System;
@@ -23,7 +24,20 @@ namespace KSHOP_TWO.BLL.MappingConfig
                .Map(dest => dest.Name, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault()
 
                )
-               .Map(dest => dest.MainImage, source => $"https://localhost:7082/images/${source.MainImage}");
+               .Map(dest => dest.MainImage, source => $"https://localhost:7082/images/{source.MainImage}");
+
+
+            TypeAdapterConfig<Brand, BrandResponse>.NewConfig()
+              .Map(dest => dest.Name, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault()
+
+              )
+              .Map(dest => dest.Logo, source => $"https://localhost:7082/images/{source.Logo}");
+
+            TypeAdapterConfig<ProductUpdateRequest, Product>.NewConfig()
+                 .IgnoreNullValues(true);
+
+            TypeAdapterConfig<BrandUpdateRequest, Brand>.NewConfig()
+                 .IgnoreNullValues(true);
 
 
 
