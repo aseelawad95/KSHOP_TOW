@@ -44,7 +44,7 @@ namespace KSHOP_TOW.PL.Controllers
 
         [HttpPost("")]
         [Authorize]
-        public async Task<IActionResult> Create(CategoryRequest request)
+        public async Task<IActionResult> Create([FromForm]  CategoryRequest request)
         {
             //var user = User.FindFirstValue(ClaimTypes.NameIdentifier);
           var response= await _categoryService.CreateCategories(request);

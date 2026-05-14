@@ -10,6 +10,7 @@ namespace KSHOP_TWO.DAL.DTO.Request
     {
         public string Email { get; set; }
 
+    
         public string Password { get; set; }
     }
 }

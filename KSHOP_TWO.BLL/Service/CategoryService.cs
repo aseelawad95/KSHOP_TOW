@@ -15,15 +15,25 @@ namespace KSHOP_TWO.BLL.Service
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryrepository;
-        public CategoryService(ICategoryRepository categoryrepository)
+        private readonly IFileService _fileService;
+        public CategoryService(ICategoryRepository categoryrepository, IFileService fileService)
         {
             _categoryrepository = categoryrepository;
+            _fileService = fileService;
         }
         public async Task<CategoryResponse> CreateCategories(CategoryRequest request)
         {
             var category = request.Adapt<Category>();
-          await  _categoryrepository.CreateAsync(category);
-            return category.Adapt<CategoryResponse>();
+            if (request.MainImage != null)
+            {
+                var imagePath = await _fileService.UploadAsync(request.MainImage);
+                category.MainImage = imagePath;
+            }
+            await  _categoryrepository.CreateAsync(category);
+            var response = category.Adapt<CategoryResponse>();
+
+            response.MainImage = _fileService.GetImageUrl(category.MainImage);
+            return response;
         }
 
         public async Task<bool> DeleteCategory(int id)
@@ -35,20 +45,34 @@ namespace KSHOP_TWO.BLL.Service
 
         public async Task<List<CategoryResponse>> GetAll()
         {
-            var categories =await _categoryrepository.GetAllAsync(new string[] {nameof(Category.Translations),
-                nameof(Category.CreatedBy)
-            });
+                    var categories = await _categoryrepository.GetAllAsync(
+               c => c.Status == EntityStatus.Active,
+               new string[] {
+                    nameof(Category.Translations),
+                    nameof(Category.CreatedBy)
+               });
 
+            var response = categories.Adapt<List<CategoryResponse>>();
+
+            foreach (var item in response)
+            {
+                if (!string.IsNullOrEmpty(item.MainImage))
+                {
+                    item.MainImage = _fileService.GetImageUrl(item.MainImage);
+                }
+            }
+
+            return response;
             //categories.BuildAdapter().AddParameters("lang", lang).AdaptToType<List<CategoryResponse>>()
 
-            return categories.Adapt<List<CategoryResponse>>();
         }
 
        public async Task<CategoryResponse> GetCategory(Expression<Func<Category,bool>> filter)
         {
             var category = await _categoryrepository.GetOne(filter,new string[] {nameof(Category.Translations)});
-            return category.Adapt<CategoryResponse>();
-            
+            var response = category.Adapt<CategoryResponse>();
+            response.MainImage = _fileService.GetImageUrl(category?.MainImage);
+            return response;      
         }
 
        public async Task<CategoryResponse> UpdateAsync(int id, CategoryRequest request)

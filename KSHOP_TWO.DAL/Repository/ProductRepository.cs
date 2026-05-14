@@ -14,5 +14,22 @@ namespace KSHOP_TWO.DAL.Repository
         {
 
         }
+
+        public async Task<List<Product>?> DecreaseQuantityAsync(List<OrderItem> orderItems)
+        {
+            var productIds = orderItems.Select(oi => oi.ProductId).ToList();
+
+            var products = await GetAllAsync(p => productIds.Contains(p.Id));
+
+            foreach (var product in products)
+            {
+                var item = orderItems.FirstOrDefault(oi => oi.ProductId == product.Id);
+                product.Quantity -= item.Quantity;
+            }
+
+            
+            await UpdateRangeAsync(products);
+            return products.Where(p => p.Quantity <5).ToList();
+        }
     }
 }

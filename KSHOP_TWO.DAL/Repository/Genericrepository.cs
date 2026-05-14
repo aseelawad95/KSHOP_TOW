@@ -36,10 +36,16 @@ namespace KSHOP_TWO.DAL.Repository
             return affected > 0;
         }
 
-        public async Task<List<T>> GetAllAsync(string[]? includes = null)
+       
+
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter, string[]? includes = null)
         {
             IQueryable<T> query = _context.Set<T>();
-            if(includes != null)
+            if(filter != null)
+            {
+                query = query.Where(filter);
+            }
+            if (includes != null)
             {
                 foreach(var include in includes)
                 {
@@ -48,6 +54,24 @@ namespace KSHOP_TWO.DAL.Repository
             }
             return await query.ToListAsync();
         }
+
+        public IQueryable<T> GetQuerable(Expression<Func<T, bool>> filter, string[]? includes = null)
+        {
+            IQueryable<T> query = _context.Set<T>();
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+            return  query;
+        }
+
 
 
         public async Task<T?> GetOne(Expression<Func<T, bool>> filter,string[]? includes = null)
@@ -68,6 +92,19 @@ namespace KSHOP_TWO.DAL.Repository
              _context.Update(entity);
         var affected =    await _context.SaveChangesAsync();
             return affected > 0;
+        }
+
+
+        public async Task<bool> DeleteRangeAsync(List<T> entities)
+        {
+           _context.RemoveRange(entities);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateRangeAsync(List<T> entities)
+        {
+            _context.UpdateRange(entities);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

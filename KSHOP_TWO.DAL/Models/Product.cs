@@ -28,5 +28,7 @@ namespace KSHOP_TWO.DAL.Models
         public int? BrandId { get; set; }
 
         public Brand Brand { get; set; }
+
+        public List<ProductImage> ProductImages { get; set; }= new List<ProductImage>();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using KSHOP_TWO.DAL.DTO.Request;
 using KSHOP_TWO.DAL.DTO.Response;
+using KSHOP_TWO.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +21,9 @@ namespace KSHOP_TWO.BLL.Service
         Task<ForgotPasswordResponse> RequestPasswordRestAsync(ForgotPasswordRequest request);
 
         Task<RestPasswordResponse> RestPasswordAsync(RestPasswordRequest request);
+
+        Task<LoginResponse> RefreshTokenAsync();
+
+
     }
 }

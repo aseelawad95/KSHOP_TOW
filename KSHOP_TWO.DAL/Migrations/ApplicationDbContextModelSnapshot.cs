@@ -77,6 +77,12 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -147,6 +153,24 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.ToTable("BrandTranslation");
                 });
 
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Cart", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Carts");
+                });
+
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -160,6 +184,13 @@ namespace KSHOP_TWO.DAL.Migrations
 
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("MainImage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("UpdatedById")
                         .HasColumnType("nvarchar(450)");
@@ -202,6 +233,79 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.ToTable("CategoryTranslation");
                 });
 
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ShippedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeSessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.OrderItem", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("ProductId", "OrderId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Ordertems");
+                });
+
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -238,6 +342,9 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.Property<double>("Rate")
                         .HasColumnType("float");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("UpdatedById")
                         .HasColumnType("nvarchar(450)");
 
@@ -255,6 +362,28 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.HasIndex("UpdatedById");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.ProductTranslation", b =>
@@ -431,6 +560,25 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.Navigation("Brand");
                 });
 
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Cart", b =>
+                {
+                    b.HasOne("KSHOP_TWO.DAL.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KSHOP_TWO.DAL.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Category", b =>
                 {
                     b.HasOne("KSHOP_TWO.DAL.Models.ApplicationUser", "CreatedBy")
@@ -457,6 +605,36 @@ namespace KSHOP_TWO.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("category");
+                });
+
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Order", b =>
+                {
+                    b.HasOne("KSHOP_TWO.DAL.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.OrderItem", b =>
+                {
+                    b.HasOne("KSHOP_TWO.DAL.Models.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KSHOP_TWO.DAL.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Product", b =>
@@ -488,6 +666,17 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.Navigation("CreatedBy");
 
                     b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.ProductImage", b =>
+                {
+                    b.HasOne("KSHOP_TWO.DAL.Models.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.ProductTranslation", b =>
@@ -566,8 +755,15 @@ namespace KSHOP_TWO.DAL.Migrations
                     b.Navigation("products");
                 });
 
+            modelBuilder.Entity("KSHOP_TWO.DAL.Models.Order", b =>
+                {
+                    b.Navigation("OrderItems");
+                });
+
             modelBuilder.Entity("KSHOP_TWO.DAL.Models.Product", b =>
                 {
+                    b.Navigation("ProductImages");
+
                     b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618

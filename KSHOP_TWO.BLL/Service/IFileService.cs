@@ -11,5 +11,7 @@ namespace KSHOP_TWO.BLL.Service
     {
         Task<string?> UploadAsync(IFormFile file);
         void Delete(string fileName);
+
+        string GetImageUrl(string? fileName);
     }
 }

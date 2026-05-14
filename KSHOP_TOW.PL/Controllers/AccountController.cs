@@ -53,6 +53,14 @@ namespace KSHOP_TOW.PL.Controllers
             return Ok(result);
         }
 
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var result = await _authenticationService.RefreshTokenAsync();
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
+
         [HttpPost("RestPassword")]
         public async Task<IActionResult> RestPassword(RestPasswordRequest request)
         {

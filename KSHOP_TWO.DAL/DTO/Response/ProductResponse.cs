@@ -18,5 +18,6 @@ namespace KSHOP_TWO.DAL.DTO.Response
         public int Quantity { get; set; }
 
         public string MainImage { get; set; }
+        public List<string> SubImages { get; set; }
     }
 }

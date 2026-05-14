@@ -14,6 +14,8 @@ namespace KSHOP_TWO.DAL.Models
        
         public List<CategoryTranslation> Translations { get; set; }
 
+        public string MainImage { get; set; }
+
         public List<Product> products { get; set; }
 
     }

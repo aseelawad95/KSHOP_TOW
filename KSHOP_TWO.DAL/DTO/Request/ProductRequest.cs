@@ -1,4 +1,5 @@
 ﻿
+using KSHOP_TWO.DAL.Validations;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,11 @@ namespace KSHOP_TWO.DAL.DTO.Request
         public decimal Discount { get; set; }
 
         public int Quantity { get; set; }
-
+        [AllowedExtensions]
+        [MaxFileSize(2)]
         public IFormFile MainImage { get; set; }
+
+        public List<IFormFile>? SubImages { get; set; }
 
         public List<ProductTranslationRequest> Translations { get; set; }
 

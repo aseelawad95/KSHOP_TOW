@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,5 +10,6 @@ namespace KSHOP_TWO.DAL.DTO.Request
     public class CategoryRequest
     {
        public List<CategoryTranslationsRequest> Translations { get; set; }
+        public IFormFile MainImage { get; set; }
     }
 }

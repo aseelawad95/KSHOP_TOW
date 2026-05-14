@@ -28,6 +28,14 @@ namespace KSHOP_TWO.DAL.Data
 
         public DbSet<BrandTranslation> BrandTranslation { get; set; }
 
+        public DbSet<Cart> Carts { get; set; }
+
+        public DbSet<OrderItem> Ordertems { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<ProductImage> ProductImages { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
             IHttpContextAccessor httpContextAccessor  
             ) : base(options)
@@ -55,6 +63,7 @@ namespace KSHOP_TWO.DAL.Data
 
             builder.Entity<Product>()
                 .HasOne(p => p.CreatedBy)
+
                 .WithMany()
                 .HasForeignKey(p => p.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);

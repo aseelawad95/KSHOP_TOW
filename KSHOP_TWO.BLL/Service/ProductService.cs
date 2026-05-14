@@ -1,4 +1,5 @@
-﻿using KSHOP_TWO.DAL.DTO.Request;
+﻿using KSHOP_TWO.BLL.Extentions;
+using KSHOP_TWO.DAL.DTO.Request;
 using KSHOP_TWO.DAL.DTO.Response;
 using KSHOP_TWO.DAL.Models;
 using KSHOP_TWO.DAL.Repository;
@@ -32,21 +33,56 @@ namespace KSHOP_TWO.BLL.Service
                 var imagePath = await _fileService.UploadAsync(request.MainImage);
                 product.MainImage = imagePath;
             }
-            await _productRepository.CreateAsync(product);
+            if(request.SubImages != null)
+            {
+                foreach(var image in request.SubImages)
+                {
+                    var imagePath = await _fileService.UploadAsync(image);
+                    product.ProductImages.Add(new ProductImage
+                    {
+                        ImagePath = imagePath
+                    });
+                }
+            }
+            var response = await _productRepository.CreateAsync(product);
+            response.MainImage = _fileService.GetImageUrl(product.MainImage);
         }
 
 
-        public async Task<List<ProductResponse>> GetAllProducts()
+        public async Task<PaginstionPesponse<ProductResponse>> GetAllProducts(PaginationRequest request)
         {
-            var products = await _productRepository.GetAllAsync(
+            var query =  _productRepository.GetQuerable(
+                p => p.Status == EntityStatus.Active,
                 new string[]
                 {
                     nameof(Product.Translations),
                     nameof(Product.CreatedBy),
+                    nameof(Product.ProductImages)
                 }
                 );
+            var paginated = await query.ToPaginationAsync(request.Page, request.Limit);
 
-            return products.Adapt<List<ProductResponse>>();
+            var response = query.Adapt<List<ProductResponse>>();
+
+           
+
+            foreach (var product in response)
+            {
+                if (!string.IsNullOrEmpty(product.MainImage))
+                {
+                    product.MainImage = _fileService.GetImageUrl(product.MainImage);
+                }
+            }
+
+            return new PaginstionPesponse<ProductResponse>
+            {
+                Data = paginated.Data.Adapt<List<ProductResponse>>(),
+                TotalCount = paginated.TotalCount,
+                Page = paginated.Page,
+                Limit = paginated.Limit,
+              
+            };
+            
         }
 
         public async Task<ProductResponse> GetProduct(Expression<Func<Product, bool>> filter)
@@ -58,14 +94,25 @@ namespace KSHOP_TWO.BLL.Service
                     nameof(Product.CreatedBy),
                 });
             if (product == null) return null;
-            return product.Adapt<ProductResponse>();
+            var response = product.Adapt<ProductResponse>();
+            response.MainImage = _fileService.GetImageUrl(product.MainImage);
+            return response;
         }
 
         public async Task<bool> DeleteProduct(int id)
         {
-            var product = await _productRepository.GetOne(c => c.Id == id);
+            var product = await _productRepository.GetOne(c => c.Id == id,
+                new string[]
+                {
+                    nameof(Product.ProductImages),
+                }
+                );
             if (product == null) return false;
               _fileService.Delete(product.MainImage);
+            foreach(var image in product.ProductImages)
+            {
+                               _fileService.Delete(image.ImagePath);
+            }
             await _productRepository.DeleteAsync(product);
             return true;
         }
@@ -76,6 +123,7 @@ namespace KSHOP_TWO.BLL.Service
                 new string[]
                 {
                     nameof(Product.Translations),
+                    nameof(Product.ProductImages)
                 }
                 );
             if (productDb == null) return false;
@@ -118,11 +166,51 @@ namespace KSHOP_TWO.BLL.Service
                     productDb.MainImage = oldOmage;
                 }
 
+                if(request.SubImages != null)
+                {
+                    foreach(var image in productDb.ProductImages)
+                    {
+                        _fileService.Delete(image.ImagePath);
+
+                    }
+                    productDb.ProductImages.Clear();
+                    foreach(var image in request.SubImages)
+                    {
+                        var imagePath = await _fileService.UploadAsync(image);
+                        productDb.ProductImages.Add(new ProductImage
+                        {
+                            ImagePath = imagePath
+                        });
+                    }
+                }
+
+                if(request.NewImages != null)
+                {
+                    foreach(var image in request.NewImages)
+                    {
+                        var imagePath = await _fileService.UploadAsync(image);
+                        productDb.ProductImages.Add(new ProductImage
+                        {
+                            ImagePath = imagePath
+                        });
+                    }
+                }
+
                 return await _productRepository.UpdateAsync(productDb);
 
 
             }
             return true;
+        }
+
+        public async Task<bool> ToggeleStatus(int id)
+        {
+            var product = await _productRepository.GetOne(p => p.Id == id);
+            if (product == null) return false;
+            
+            product.Status = product.Status == EntityStatus.Active ?
+                EntityStatus.InActive : EntityStatus.Active;
+            return await _productRepository.UpdateAsync(product);
         }
         
     }

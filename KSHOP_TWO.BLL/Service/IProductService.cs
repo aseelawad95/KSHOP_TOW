@@ -14,12 +14,14 @@ namespace KSHOP_TWO.BLL.Service
     {
         Task CreateProduct(ProductRequest request);
 
-        Task<List<ProductResponse>> GetAllProducts();
+        Task<PaginstionPesponse<ProductResponse>> GetAllProducts(PaginationRequest request);
 
         Task<ProductResponse> GetProduct(Expression<Func<Product, bool>> filter);
 
         Task<bool> DeleteProduct(int id);
 
         Task<bool> UpdateProduct(int id, ProductUpdateRequest request);
+
+        Task<bool> ToggeleStatus(int id);
     }
 }

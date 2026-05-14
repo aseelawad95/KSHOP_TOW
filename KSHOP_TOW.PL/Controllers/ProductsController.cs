@@ -24,9 +24,9 @@ namespace KSHOP_TOW.PL.Controllers
 
         [HttpGet("")]
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromQuery]PaginationRequest request)
         {
-              var products = await _productService.GetAllProducts();
+              var products = await _productService.GetAllProducts(request);
 
             return Ok(products);
         }
@@ -61,6 +61,21 @@ namespace KSHOP_TOW.PL.Controllers
         public async Task<IActionResult> UpdateProduct(int id,[FromForm] ProductUpdateRequest request)
         {
          var updated  = await _productService.UpdateProduct(id,request);
+            if (!updated)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
+
+        }
+
+        [HttpPatch("{id}/status")]
+        [Authorize]
+
+        public async Task<IActionResult> ChangeStatus(int id)
+        {
+            var updated = await _productService.ToggeleStatus(id);
             if (!updated)
             {
                 return BadRequest();

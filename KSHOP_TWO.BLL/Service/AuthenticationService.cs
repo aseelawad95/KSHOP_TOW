@@ -5,6 +5,7 @@ using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -94,6 +95,8 @@ namespace KSHOP_TWO.BLL.Service
             var result = await _userManager.CheckPasswordAsync(user, request.Password);
             if (!result)
                 return new LoginResponse() { Message = "Invalid password", Success = false };
+            var refreshToken = await GenerateRefreshToken(user);
+            SetRefreshTokenInCookie(refreshToken);
             return new LoginResponse() { Message = "Success", Success = true, AccessToken = await GenerateAccessToken(user) };
         }
 
@@ -118,6 +121,52 @@ namespace KSHOP_TWO.BLL.Service
 
             return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
 
+        }
+
+        private async Task<string> GenerateRefreshToken(ApplicationUser user)
+        {
+              var refreshToken = Guid.NewGuid().ToString();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
+            return refreshToken;
+        }
+
+
+        public async Task<LoginResponse> RefreshTokenAsync()
+        {
+            var refreshToken = _httpContextAccessor.HttpContext?.Request.Cookies["refreshToken"];
+            if (refreshToken is null)
+            {
+                return new LoginResponse() { Message = "Refresh Token Not Found", Success = false };
+            }
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            if (user is null || user.RefreshTokenExpiry < DateTime.UtcNow)
+            {
+                return new LoginResponse() { Message = "Invalid Refresh Token", Success = false };
+            }
+            var newAccessToken = await GenerateAccessToken(user);
+            SetRefreshTokenInCookie(newAccessToken);
+
+            return new LoginResponse()
+            {
+                Message = "Success",
+                Success = true,
+                AccessToken = await GenerateAccessToken(user)
+            };
+             
+            
+        }
+        private void SetRefreshTokenInCookie(string refreshToken)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Secure = false, // true if using HTTPS Production
+                SameSite = SameSiteMode.None,///اقبل من نفس الموقع فقط
+            };
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
 
 

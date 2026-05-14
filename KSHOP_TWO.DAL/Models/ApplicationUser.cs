@@ -18,5 +18,9 @@ namespace KSHOP_TWO.DAL.Models
         public string? CodeRestPassword { get; set; }
 
         public DateTime? PasswordRestCodeExpiry { get; set; }
-    }
+
+        public string? RefreshToken { get; set; }
+
+        public DateTime? RefreshTokenExpiry { get; set; }
+}
 }

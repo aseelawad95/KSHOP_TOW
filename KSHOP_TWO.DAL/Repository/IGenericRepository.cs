@@ -10,7 +10,9 @@ namespace KSHOP_TWO.DAL.Repository
 {
     public interface IGenericRepository<T> where T : class
     {
-        Task<List<T>> GetAllAsync(string[]? includes = null);
+        Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter, string[]? includes = null);
+
+        IQueryable<T> GetQuerable(Expression<Func<T, bool>> filter, string[]? includes = null);
 
         Task<T> CreateAsync(T categpry);
 
@@ -19,5 +21,9 @@ namespace KSHOP_TWO.DAL.Repository
         Task<bool> DeleteAsync(T entity);
 
         Task<bool> UpdateAsync(T entity);
+
+        Task<bool> DeleteRangeAsync(List<T> entities);
+
+        Task<bool> UpdateRangeAsync(List<T> entities);
     }
 }

@@ -39,6 +39,7 @@ namespace KSHOP_TWO.BLL.Service
         public async Task<List<BrandResponse>> GetAllBrands()
         {
             var brands = await _brandRepository.GetAllAsync(
+               null,
               new string[]
               {
                     nameof(Brand.Translations),

@@ -17,6 +17,9 @@ namespace KSHOP_TWO.DAL.DTO.Request
 
         public IFormFile? MainImage { get; set; }
 
+        public List<IFormFile>? SubImages { get; set; }
+        public List<IFormFile>? NewImages { get; set; }
+
         public List<ProductTranslationRequest>? Translations { get; set; }
 
         public int? CategoryId { get; set; }

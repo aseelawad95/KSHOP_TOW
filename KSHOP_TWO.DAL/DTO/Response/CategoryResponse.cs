@@ -12,5 +12,7 @@ namespace KSHOP_TWO.DAL.DTO.Response
         public int category_id { get; set; }
         //public List<CategoryTranslationResponse> Translations { get; set; }
         public string Name { get; set; }
+
+        public string MainImage { get; set; }
     }
 }
