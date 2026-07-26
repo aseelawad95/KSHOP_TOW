@@ -13,6 +13,8 @@ namespace KSHOP_TWO.DAL.DTO.Response
         public int Limit { get; set; }
         public int TotalCount { get; set; }
 
+
+
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / Limit);
 
     }

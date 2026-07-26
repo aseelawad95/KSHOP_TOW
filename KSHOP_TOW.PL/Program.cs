@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Serilog;
+using KSHOP_TOW.PL.Middleware;
 
 
 namespace KSHOP_TOW.PL
@@ -99,6 +100,8 @@ namespace KSHOP_TOW.PL
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            app.UseMiddleware<GlobalExceptionHandling>();
 
             using (var scope = app.Services.CreateScope())
             {

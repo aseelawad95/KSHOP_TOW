@@ -92,6 +92,11 @@ namespace KSHOP_TWO.BLL.Service
                 return new LoginResponse() { Message = "User not Confirmed", Success = false };
             }
 
+            if(await _userManager.IsLockedOutAsync(user))
+            {
+                return new LoginResponse() { Message = "Account Is Blocked", Success = false };
+            }
+
             var result = await _userManager.CheckPasswordAsync(user, request.Password);
             if (!result)
                 return new LoginResponse() { Message = "Invalid password", Success = false };

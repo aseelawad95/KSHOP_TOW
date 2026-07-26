@@ -11,10 +11,11 @@ namespace KSHOP_TWO.DAL.Models
     {
         Pending = 1,
         Approved = 2,
-        Shipped = 3,
+        Shipped = 3,       
         Delivered = 4,
-        Cancelled = 5,
-        Paid = 6,
+        Paid = 5,
+        Cancelled = 6,
+        
     }
 
     public class Order

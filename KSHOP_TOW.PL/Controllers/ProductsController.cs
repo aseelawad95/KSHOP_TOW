@@ -24,7 +24,7 @@ namespace KSHOP_TOW.PL.Controllers
 
         [HttpGet("")]
 
-        public async Task<IActionResult> Index([FromQuery]PaginationRequest request)
+        public async Task<IActionResult> Index([FromQuery] ProductFilterRequest request)
         {
               var products = await _productService.GetAllProducts(request);
 

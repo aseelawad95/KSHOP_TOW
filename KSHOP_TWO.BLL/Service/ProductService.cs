@@ -49,52 +49,73 @@ namespace KSHOP_TWO.BLL.Service
         }
 
 
-        public async Task<PaginstionPesponse<ProductResponse>> GetAllProducts(PaginationRequest request)
+        public async Task<PaginstionPesponse<ProductResponse>> GetAllProducts(ProductFilterRequest request)
         {
-            var query =  _productRepository.GetQuerable(
+            var query = _productRepository.GetQuerable(
                 p => p.Status == EntityStatus.Active,
                 new string[]
                 {
-                    nameof(Product.Translations),
-                    nameof(Product.CreatedBy),
-                    nameof(Product.ProductImages)
-                }
-                );
+            nameof(Product.Translations),
+            nameof(Product.CreatedBy),
+            nameof(Product.ProductImages),
+                });
+
+            if (request.Search != null)
+                query = query.Where(p => p.Translations.Any(t => t.Name.Contains(request.Search)));
+
+            if (request.CategoryId.HasValue)
+                query = query.Where(p => p.CategoryId == request.CategoryId);
+
+            if (request.MinPrice.HasValue)
+                query = query.Where(p => p.Price >= request.MinPrice);
+
+            if (request.MaxPrice.HasValue)
+                query = query.Where(p => p.Price <= request.MaxPrice);
+
+            if (request.MinRate.HasValue)
+                query = query.Where(p => p.Rate >= request.MinRate.Value);
+
             var paginated = await query.ToPaginationAsync(request.Page, request.Limit);
 
-            var response = query.Adapt<List<ProductResponse>>();
+            var responseData = paginated.Data.Adapt<List<ProductResponse>>();
 
-           
-
-            foreach (var product in response)
+            foreach (var product in responseData)
             {
                 if (!string.IsNullOrEmpty(product.MainImage))
-                {
+
                     product.MainImage = _fileService.GetImageUrl(product.MainImage);
+                if (product.SubImages != null)
+                {
+                    if (product.SubImages != null)
+                    {
+                        product.SubImages = product.SubImages
+                            .Select(img => !string.IsNullOrEmpty(img) ? _fileService.GetImageUrl(img) : img)
+                            .ToList();
+                    }
                 }
             }
 
             return new PaginstionPesponse<ProductResponse>
             {
-                Data = paginated.Data.Adapt<List<ProductResponse>>(),
+                Data = responseData,
                 TotalCount = paginated.TotalCount,
                 Page = paginated.Page,
                 Limit = paginated.Limit,
-              
             };
-            
         }
 
-        public async Task<ProductResponse> GetProduct(Expression<Func<Product, bool>> filter)
+        public async Task<ProductGetOneResponse> GetProduct(Expression<Func<Product, bool>> filter)
         {
             var product = await _productRepository.GetOne(filter,
                 new string[]
                 {
-                    nameof(Product.Translations),
-                    nameof(Product.CreatedBy),
+                      nameof(Product.Translations),
+                        nameof(Product.CreatedBy),
+                        nameof(Product.ProductImages),
+                        nameof(Product.Reviews),
                 });
             if (product == null) return null;
-            var response = product.Adapt<ProductResponse>();
+            var response = product.Adapt<ProductGetOneResponse>();
             response.MainImage = _fileService.GetImageUrl(product.MainImage);
             return response;
         }
@@ -122,13 +143,12 @@ namespace KSHOP_TWO.BLL.Service
             var productDb = await _productRepository.GetOne(c => c.Id == id,
                 new string[]
                 {
-                    nameof(Product.Translations),
-                    nameof(Product.ProductImages)
+            nameof(Product.Translations),
+            nameof(Product.ProductImages)
                 }
                 );
             if (productDb == null) return false;
             request.Adapt(productDb);
-
             if (request.Translations != null)
             {
                 foreach (var translation in request.Translations)
@@ -144,64 +164,50 @@ namespace KSHOP_TWO.BLL.Service
                         {
                             existing.Description = translation.Description;
                         }
-                        else
-                        {
-                            return false;
-                        }
                     }
                 }
-
-
-
-                var oldOmage = productDb.MainImage;
-                if (request.MainImage != null)
-                {
-                    _fileService.Delete(oldOmage);
-                    var imagePath = await _fileService.UploadAsync(request.MainImage);
-                    productDb.MainImage = imagePath!;
-
-                }
-                else
-                {
-                    productDb.MainImage = oldOmage;
-                }
-
-                if(request.SubImages != null)
-                {
-                    foreach(var image in productDb.ProductImages)
-                    {
-                        _fileService.Delete(image.ImagePath);
-
-                    }
-                    productDb.ProductImages.Clear();
-                    foreach(var image in request.SubImages)
-                    {
-                        var imagePath = await _fileService.UploadAsync(image);
-                        productDb.ProductImages.Add(new ProductImage
-                        {
-                            ImagePath = imagePath
-                        });
-                    }
-                }
-
-                if(request.NewImages != null)
-                {
-                    foreach(var image in request.NewImages)
-                    {
-                        var imagePath = await _fileService.UploadAsync(image);
-                        productDb.ProductImages.Add(new ProductImage
-                        {
-                            ImagePath = imagePath
-                        });
-                    }
-                }
-
-                return await _productRepository.UpdateAsync(productDb);
-
-
             }
-            return true;
+            var oldOmage = productDb.MainImage;
+            if (request.MainImage != null)
+            {
+                _fileService.Delete(oldOmage);
+                var imagePath = await _fileService.UploadAsync(request.MainImage);
+                productDb.MainImage = imagePath!;
+            }
+            else
+            {
+                productDb.MainImage = oldOmage;
+            }
+            if (request.SubImages != null)
+            {
+                foreach (var image in productDb.ProductImages)
+                {
+                    _fileService.Delete(image.ImagePath);
+                }
+                productDb.ProductImages.Clear();
+                foreach (var image in request.SubImages)
+                {
+                    var imagePath = await _fileService.UploadAsync(image);
+                    productDb.ProductImages.Add(new ProductImage
+                    {
+                        ImagePath = imagePath
+                    });
+                }
+            }
+            if (request.NewImages != null)
+            {
+                foreach (var image in request.NewImages)
+                {
+                    var imagePath = await _fileService.UploadAsync(image);
+                    productDb.ProductImages.Add(new ProductImage
+                    {
+                        ImagePath = imagePath
+                    });
+                }
+            }
+            return await _productRepository.UpdateAsync(productDb);
         }
+
 
         public async Task<bool> ToggeleStatus(int id)
         {

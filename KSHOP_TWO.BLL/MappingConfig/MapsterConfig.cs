@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace KSHOP_TWO.BLL.MappingConfig
 {
+    //$env:ASPNETCORE_ENVIRONMENT='Production'
     public class MapsterConfig
     {
 
@@ -18,7 +19,7 @@ namespace KSHOP_TWO.BLL.MappingConfig
             TypeAdapterConfig<Category, CategoryResponse>.NewConfig()
                 .Map(dest => dest.category_id, source => source.Id)
                .Map(dest => dest.MainImage, source => source.MainImage)
-                .Map(dest => dest.Name, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault());
+                .Map(dest => dest.Name, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault() ?? null);
 
             TypeAdapterConfig<Product, ProductResponse>.NewConfig()
                .Map(dest => dest.Name, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault()
@@ -26,6 +27,16 @@ namespace KSHOP_TWO.BLL.MappingConfig
                )
                .Map(dest => dest.MainImage, source => $"https://localhost:7082/images/{source.MainImage}")
                .Map(dest=> dest.SubImages ,src => src.ProductImages.Select(i => $"https://localhost:7082/images/{i.ImagePath}"));
+
+            //
+            TypeAdapterConfig<Product, ProductGetOneResponse>.NewConfig()
+              .Map(dest => dest.Name, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault()
+
+              )
+               .Map(dest => dest.Description, source => source.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Description).FirstOrDefault())
+              .Map(dest => dest.MainImage, source => $"https://localhost:7082/images/{source.MainImage}")
+              .Map(dest => dest.SubImages, src => src.ProductImages.Select(i => $"https://localhost:7082/images/{i.ImagePath}"));
+
 
 
             TypeAdapterConfig<Brand, BrandResponse>.NewConfig()
@@ -53,7 +64,12 @@ namespace KSHOP_TWO.BLL.MappingConfig
               .Map(dest => dest.ProductName, source => source.Product.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault()
 
               );
+            TypeAdapterConfig<Review, ReviewResponse>.NewConfig()
+            .Map(dest => dest.UserName,
+                 src => src.User.FullName)
+            .Map(dest => dest.CreatedAt,
+                 src => src.CreatedAt);
 
-        }
+                }
     }
 }

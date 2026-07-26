@@ -25,7 +25,7 @@ namespace KSHOP_TWO.DAL.DTO.Response
 
         public DateTime OrderDate { get; set; }
 
-        public List<OrderItemsResponse> OrderItems { get; set; } = new List<OrderItemsResponse>();
+       
 
 
     }

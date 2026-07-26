@@ -21,6 +21,10 @@ namespace KSHOP_TOW.PL.Extentions
             Services.AddScoped<ICheckoutService, KSHOP_TWO.BLL.Service.CheckoutService>();
             Services.AddScoped<IOrderRepository, OrderRepository>();
             Services.AddScoped<IOrderService, OrderService>();
+            Services.AddScoped<IUserManagmentService, UserManagmentService>();
+
+            Services.AddScoped<IReviewRepository, ReviewRepository>();
+            Services.AddScoped<IRewiewService, KSHOP_TWO.BLL.Service.ReviewService>();
             Services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
             StripeConfiguration.ApiKey = Configuration["Stripe:SecretKey"];
 

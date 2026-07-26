@@ -36,6 +36,8 @@ namespace KSHOP_TWO.DAL.Data
 
         public DbSet<ProductImage> ProductImages { get; set; }
 
+        public DbSet<Review> Reviews { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
             IHttpContextAccessor httpContextAccessor  
             ) : base(options)
@@ -45,15 +47,16 @@ namespace KSHOP_TWO.DAL.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // fluent api
             builder.Entity<ApplicationUser>().ToTable("Users");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+
+
             builder.Entity<Category>()
-                .HasOne(p => p.CreatedBy)
-                .WithMany()
-                .HasForeignKey(p => p.CreatedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(p => p.CreatedBy)
+            .WithMany()
+            .HasForeignKey(p => p.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Category>()
                 .HasOne(p => p.UpdatedBy)
@@ -63,7 +66,6 @@ namespace KSHOP_TWO.DAL.Data
 
             builder.Entity<Product>()
                 .HasOne(p => p.CreatedBy)
-
                 .WithMany()
                 .HasForeignKey(p => p.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -73,6 +75,12 @@ namespace KSHOP_TWO.DAL.Data
                 .WithMany()
                 .HasForeignKey(p => p.UpdatedById)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<BrandTranslation>()
                 .HasOne(bt => bt.Brand)

@@ -30,5 +30,7 @@ namespace KSHOP_TWO.DAL.Models
         public Brand Brand { get; set; }
 
         public List<ProductImage> ProductImages { get; set; }= new List<ProductImage>();
+
+        public List<Review> Reviews { get; set; }
     }
 }

@@ -14,9 +14,9 @@ namespace KSHOP_TWO.BLL.Service
     {
         Task CreateProduct(ProductRequest request);
 
-        Task<PaginstionPesponse<ProductResponse>> GetAllProducts(PaginationRequest request);
+        Task<PaginstionPesponse<ProductResponse>> GetAllProducts(ProductFilterRequest request);
 
-        Task<ProductResponse> GetProduct(Expression<Func<Product, bool>> filter);
+        Task<ProductGetOneResponse> GetProduct(Expression<Func<Product, bool>> filter);
 
         Task<bool> DeleteProduct(int id);
 
