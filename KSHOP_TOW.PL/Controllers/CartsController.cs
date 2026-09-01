@@ -28,6 +28,7 @@ namespace KSHOP_TOW.PL.Controllers
         public async Task<IActionResult> AddTCart(AddToCartRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"### USERID FROM TOKEN: [{userId}] ###");
             var result = await _cartService.AddToCart(request, userId);
             if (!result) return BadRequest();
             return Ok(new
@@ -35,7 +36,7 @@ namespace KSHOP_TOW.PL.Controllers
                 message = _localizer["Success"].Value
             });
         }
-
+        //13811896-ed26-4e6b-87bf-ef0aaee47bed
 
         [HttpGet("")]
         public async Task<IActionResult> GetCart()

@@ -116,6 +116,12 @@ namespace KSHOP_TWO.BLL.Service
                 });
             if (product == null) return null;
             var response = product.Adapt<ProductGetOneResponse>();
+            if (product.ProductImages != null && product.ProductImages.Any())
+            {
+                response.SubImages = product.ProductImages
+                    .Select(img => _fileService.GetImageUrl(img.ImagePath))  
+                    .ToList();
+            }
             response.MainImage = _fileService.GetImageUrl(product.MainImage);
             return response;
         }

@@ -4,6 +4,8 @@ using KSHOP_TWO.DAL.Models;
 using KSHOP_TWO.DAL.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Stripe.Checkout;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,6 @@ namespace KSHOP_TWO.BLL.Service
 {
     public class CheckoutService : ICheckoutService
     {
-
         private readonly ICartRepository _cartRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -23,6 +24,7 @@ namespace KSHOP_TWO.BLL.Service
         private readonly ICartService _cartService;
         private readonly IProductRepository _productRepository;
         private readonly IEmailSender _emailSender;
+
         public CheckoutService(ICartRepository cartRepository, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, IOrderRepository orderRepository,
                  ICartService cartService,
                     IProductRepository productRepository,
@@ -36,14 +38,30 @@ namespace KSHOP_TWO.BLL.Service
             _cartService = cartService;
             _productRepository = productRepository;
             _emailSender = emailSender;
-
         }
-     
+
         public async Task<CheckoutResponse> ProcessCheckout(string UserId, CheckoutRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+            {
+                return new CheckoutResponse
+                {
+                    Success = false,
+                    Error = "IdempotencyKey is required."
+                };
+            }
+
+            var existingOrder = await _orderRepository.GetOne(
+                 o => o.IdempotencyKey == request.IdempotencyKey && o.UserId == UserId);
+
+            if (existingOrder != null)
+            {
+                return BuildResponseFromExistingOrder(existingOrder);
+            }
+
             var cartItems = await _cartRepository.GetAllAsync(filter: c => c.UserId == UserId,
                 includes: new[] { nameof(Cart.Product),
-                 $"{nameof(Cart.Product)}.{nameof(Product.Translations)}"
+         $"{nameof(Cart.Product)}.{nameof(Product.Translations)}"
                 }
                 );
             if (!cartItems.Any())
@@ -66,7 +84,6 @@ namespace KSHOP_TWO.BLL.Service
                 };
             }
 
-
             var street = request.Street ?? user.Street;
             if (street is null)
             {
@@ -76,7 +93,6 @@ namespace KSHOP_TWO.BLL.Service
                     Error = "Street is required."
                 };
             }
-
 
             var phoneNumber = request.PhoneNumber ?? user.PhoneNumber;
 
@@ -98,8 +114,8 @@ namespace KSHOP_TWO.BLL.Service
                         Error = $"Not enough stock for product {item.Product.Quantity}."
                     };
                 }
-
             }
+
             var order = new Order
             {
                 UserId = UserId,
@@ -108,6 +124,7 @@ namespace KSHOP_TWO.BLL.Service
                 PhoneNumber = phoneNumber,
                 AmountPaid = cartItems.Sum(c => c.Product.Price * c.Count),
                 PaymentMethod = request.paymentMethod,
+                IdempotencyKey = request.IdempotencyKey,
                 OrderItems = cartItems.Select(c => new OrderItem
                 {
                     ProductId = c.ProductId,
@@ -117,16 +134,40 @@ namespace KSHOP_TWO.BLL.Service
                 }).ToList()
             };
 
-            await _orderRepository.CreateAsync(order);
+
+            try
+            {
+                await _orderRepository.CreateAsync(order);
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+               
+                var winningOrder = await _orderRepository.GetOne(
+                    o => o.IdempotencyKey == request.IdempotencyKey && o.UserId == UserId);
+
+                if (winningOrder != null)
+                {
+                    return BuildResponseFromExistingOrder(winningOrder);
+                }
+
+                return new CheckoutResponse
+                {
+                    Success = false,
+                    Error = "Duplicate request detected, please try again."
+                };
+            }
 
             if (request.paymentMethod == PaymentMethodEnum.Cash)
             {
+                await _cartService.ClearCart(UserId);
+
                 return new CheckoutResponse
                 {
                     Success = true,
-
+                    OrderId = order.Id
                 };
             }
+
             if (request.paymentMethod == PaymentMethodEnum.Visa)
             {
                 var options = new SessionCreateOptions
@@ -150,7 +191,6 @@ namespace KSHOP_TWO.BLL.Service
                                  ProductData = new SessionLineItemPriceDataProductDataOptions
                                  {
                                      Name = item.Product.Translations.FirstOrDefault(t => t.Language == "en").Name,
-
                                  },
                                  UnitAmount = (long)(item.Product.Price * 100),
                              },
@@ -167,16 +207,16 @@ namespace KSHOP_TWO.BLL.Service
                 return new CheckoutResponse
                 {
                     Success = true,
+                    OrderId = order.Id,
                     StripeUrl = session.Url
                 };
-
             }
+
             return new CheckoutResponse
-                {
+            {
                 Success = false,
                 Error = "Invalid payment method."
             };
-                
         }
 
         public async Task<CheckoutResponse> HandlePaymentSuccess(string sessionId)
@@ -185,18 +225,19 @@ namespace KSHOP_TWO.BLL.Service
                 includes: new[] { nameof(Order.OrderItems),
                     $"{nameof(Order.OrderItems)}.{nameof(OrderItem.Product)}",
                     $"{nameof(Order.OrderItems)}.{nameof(OrderItem.Product)}.{nameof(Product.Translations)}"
-
                 }
                 );
 
-            order.OrderStatus = OrderStatusEnum.Paid;
-            await _orderRepository.UpdateAsync(order);
+            if (order is null)
+            {
+                return new CheckoutResponse
+                {
+                    Success = false,
+                    Error = "Order not found."
+                };
+            }
 
-            await _cartService.ClearCart(order.UserId);
-            var user = await _userManager.FindByIdAsync(order.UserId);
-            await _emailSender.SendEmailAsync(user.Email, "Order Confirmation", $"Your order with ID {order.Id} has been successfully placed.");
-            var isLowStock = await _productRepository.DecreaseQuantityAsync(order.OrderItems);
-            if (isLowStock != null)
+            if (order.OrderStatus == OrderStatusEnum.Paid)
             {
                 return new CheckoutResponse
                 {
@@ -204,14 +245,23 @@ namespace KSHOP_TWO.BLL.Service
                     OrderId = order.Id
                 };
             }
-            foreach (var item in isLowStock)
+
+            order.OrderStatus = OrderStatusEnum.Paid;
+            await _orderRepository.UpdateAsync(order);
+
+            await _cartService.ClearCart(order.UserId);
+            var user = await _userManager.FindByIdAsync(order.UserId);
+            await _emailSender.SendEmailAsync(user.Email, "Order Confirmation", $"Your order with ID {order.Id} has been successfully placed.");
+
+            var lowStockProducts = await _productRepository.DecreaseQuantityAsync(order.OrderItems);
+
+            if (lowStockProducts != null)
             {
-               if(isLowStock != null)
+                foreach (var item in lowStockProducts)
                 {
                     await _emailSender.SendEmailAsync("aseelawad252@gmail.com", "Low Stock Alert",
-                   $"<h2>Product {item.Translations.FirstOrDefault(t => t.Language == "en").Name} Current Quantity : {item.Quantity}</h2>");
-                } 
-               
+                       $"<h2>Product {item.Translations.FirstOrDefault(t => t.Language == "en").Name} Current Quantity : {item.Quantity}</h2>");
+                }
             }
 
             return new CheckoutResponse
@@ -220,8 +270,24 @@ namespace KSHOP_TWO.BLL.Service
                 OrderId = order.Id
             };
         }
+
+   
+        private CheckoutResponse BuildResponseFromExistingOrder(Order existingOrder)
+        {
+            return new CheckoutResponse
+            {
+                Success = true,
+                OrderId = existingOrder.Id,
+                StripeUrl = null 
+            };
+        }
+        private bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            if (ex.InnerException is SqlException sqlEx)
+            {
+                return sqlEx.Number == 2627 || sqlEx.Number == 2601;
+            }
+            return false;
+        }
     }
-
-
 }
-

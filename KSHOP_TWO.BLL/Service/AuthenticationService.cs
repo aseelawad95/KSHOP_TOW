@@ -83,6 +83,7 @@ namespace KSHOP_TWO.BLL.Service
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
+            Console.WriteLine(user.PasswordHash);
             if (user is null)
 
                 return new LoginResponse() { Message = "User not found", Success = false };
@@ -168,8 +169,8 @@ namespace KSHOP_TWO.BLL.Service
             {
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7),
-                Secure = false, // true if using HTTPS Production
-                SameSite = SameSiteMode.None,///اقبل من نفس الموقع فقط
+                Secure = false,
+                SameSite = SameSiteMode.None,
             };
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }

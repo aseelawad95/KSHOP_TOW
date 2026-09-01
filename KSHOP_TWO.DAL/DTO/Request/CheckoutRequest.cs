@@ -20,6 +20,7 @@ namespace KSHOP_TWO.DAL.DTO.Request
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public PaymentMethodEnum paymentMethod { get; set; }
-        
+        public string IdempotencyKey { get; set; }
+
     }
 }

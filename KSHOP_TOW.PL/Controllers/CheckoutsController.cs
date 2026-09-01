@@ -26,6 +26,7 @@ namespace KSHOP_TOW.PL.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _checkoutService.ProcessCheckout(userId, request);
+            Console.WriteLine(userId);
             if (!result.Success)
             {
                 return BadRequest(result.Error);

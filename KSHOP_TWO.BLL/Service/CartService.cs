@@ -1,13 +1,16 @@
-﻿using KSHOP_TWO.DAL.DTO.Request;
+﻿using Azure;
+using KSHOP_TWO.DAL.DTO.Request;
 using KSHOP_TWO.DAL.DTO.Response;
 using KSHOP_TWO.DAL.Models;
 using KSHOP_TWO.DAL.Repository;
 using Mapster;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Product = KSHOP_TWO.DAL.Models.Product;
 
 namespace KSHOP_TWO.BLL.Service
 {
@@ -15,11 +18,15 @@ namespace KSHOP_TWO.BLL.Service
     {
         private readonly ICartRepository _cartRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IFileService _fileService;
 
-        public CartService(ICartRepository cartRepository, IProductRepository productRepository)
+        public CartService(ICartRepository cartRepository, IProductRepository productRepository,
+            IFileService fileService
+            )
         {
             _cartRepository = cartRepository;
             _productRepository = productRepository;
+            _fileService = fileService;
         }
         public async Task<bool> AddToCart(AddToCartRequest request, string UserId)
         {
@@ -68,7 +75,18 @@ namespace KSHOP_TWO.BLL.Service
                     $"{nameof(Cart.Product)}.{nameof(Product.Translations)}"
                 }
                 );
-            return items.Adapt<List<CartResponse>>();
+            var response = items.Adapt<List<CartResponse>>();
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                var product = items[i].Product;
+                if (product != null && !string.IsNullOrEmpty(product.MainImage))
+                {
+                    response[i].ProductImage = _fileService.GetImageUrl(product.MainImage);
+                }
+            }
+
+            return response;
         }
 
         public async Task<bool> RemoveItem(int productId, string userId)

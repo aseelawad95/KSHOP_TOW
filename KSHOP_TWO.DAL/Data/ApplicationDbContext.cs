@@ -88,6 +88,11 @@ namespace KSHOP_TWO.DAL.Data
                 .HasForeignKey(bt => bt.BrandId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Order>()
+             .HasIndex(o => new { o.UserId, o.IdempotencyKey })
+             .IsUnique()
+             .HasFilter("[IdempotencyKey] IS NOT NULL");
+
 
         }
 

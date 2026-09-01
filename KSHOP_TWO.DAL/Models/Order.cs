@@ -45,5 +45,7 @@ namespace KSHOP_TWO.DAL.Models
         public string Street { get; set; }
 
         public List<OrderItem> OrderItems { get; set; }
+
+        public string? IdempotencyKey { get; set; }
     }
 }

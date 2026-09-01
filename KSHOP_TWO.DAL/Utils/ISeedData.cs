@@ -11,3 +11,5 @@ namespace KSHOP_TWO.DAL.Utils
         Task DataSeed();
     }
 }
+
+//$env: ASPNETCORE_ENVIRONMENT = "Production"
