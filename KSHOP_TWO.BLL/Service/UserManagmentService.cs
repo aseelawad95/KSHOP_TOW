@@ -1,4 +1,5 @@
-﻿using KSHOP_TWO.DAL.DTO.Response;
+﻿using KSHOP_TWO.DAL.DTO.Request;
+using KSHOP_TWO.DAL.DTO.Response;
 using KSHOP_TWO.DAL.Models;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,28 @@ namespace KSHOP_TWO.BLL.Service
         public Task<bool> DeleteUser(string userId)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IdentityResult> EditUser(UserEditRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId);
+            if (user == null)
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "UserNotFound",
+                    Description = "المستخدم غير موجود"
+                });
+
+            if (!string.IsNullOrEmpty(request.UserName))
+                user.UserName = request.UserName;
+
+            if (!string.IsNullOrEmpty(request.Email))
+                user.Email = request.Email;
+
+            if (!string.IsNullOrEmpty(request.PhoneNumber))
+                user.PhoneNumber = request.PhoneNumber;
+
+            return await _userManager.UpdateAsync(user);
         }
 
         public async Task<List<UserListResponse>> GetAllUser()

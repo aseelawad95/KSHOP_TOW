@@ -2,6 +2,7 @@
 using KSHOP_TWO.DAL.DTO.Response;
 using KSHOP_TWO.DAL.Models;
 using Mapster;
+using Real_Estate.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -51,7 +52,7 @@ namespace KSHOP_TWO.BLL.MappingConfig
             TypeAdapterConfig<BrandUpdateRequest, Brand>.NewConfig()
                  .IgnoreNullValues(true);
 
-
+              
             TypeAdapterConfig<Cart, CartResponse>.NewConfig()
               .Map(dest => dest.ProductName, source => source.Product.Translations.Where(t => t.Language == CultureInfo.CurrentCulture.Name).Select(t => t.Name).FirstOrDefault()
 
@@ -70,6 +71,16 @@ namespace KSHOP_TWO.BLL.MappingConfig
             .Map(dest => dest.CreatedAt,
                  src => src.CreatedAt);
 
-                }
+
+            TypeAdapterConfig<Favorite, FavoriteResponse>.NewConfig()
+    .Map(dest => dest.ProductTitle,
+         src => src.Product.Translations
+             .Where(t => t.Language == CultureInfo.CurrentCulture.Name)
+             .Select(t => t.Name)
+             .FirstOrDefault())
+    .Map(dest => dest.ProductImageUrl,
+         src => src.Product.MainImage);
+
+        }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using KSHOP_TWO.BLL.Service;
 using KSHOP_TWO.DAL.Repository;
+using Real_Estate.BLL.Services.FavoriteSer;
+using Real_Estate.DAL.Repository.FavoriteRepo;
 using Stripe;
 
 namespace KSHOP_TOW.PL.Extentions
@@ -22,7 +24,8 @@ namespace KSHOP_TOW.PL.Extentions
             Services.AddScoped<IOrderRepository, OrderRepository>();
             Services.AddScoped<IOrderService, OrderService>();
             Services.AddScoped<IUserManagmentService, UserManagmentService>();
-
+            Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+            Services.AddScoped<IFavoriteService, FavoriteService>();
             Services.AddScoped<IReviewRepository, ReviewRepository>();
             Services.AddScoped<IRewiewService, KSHOP_TWO.BLL.Service.ReviewService>();
             Services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));

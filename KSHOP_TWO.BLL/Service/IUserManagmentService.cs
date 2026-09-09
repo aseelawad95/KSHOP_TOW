@@ -1,4 +1,6 @@
-﻿using KSHOP_TWO.DAL.DTO.Response;
+﻿using KSHOP_TWO.DAL.DTO.Request;
+using KSHOP_TWO.DAL.DTO.Response;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +17,6 @@ namespace KSHOP_TWO.BLL.Service
         Task<bool>ChangeRole(string userId, string role);
         Task<bool>  ToggleBlockedUser(string userId);
         Task<bool> DeleteUser(string userId);
+        Task<IdentityResult> EditUser(UserEditRequest request);
     }
 }

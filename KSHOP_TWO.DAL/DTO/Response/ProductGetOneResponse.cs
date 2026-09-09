@@ -23,6 +23,7 @@ namespace KSHOP_TWO.DAL.DTO.Response
 
         public List<ReviewResponse> Reviews { get; set; }
 
+        public bool IsFavourite { get; set; }
         public string Description { get; set; }
     }
 }

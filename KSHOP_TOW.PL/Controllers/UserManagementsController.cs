@@ -51,5 +51,17 @@ namespace KSHOP_TOW.PL.Controllers
             return Ok(result);
         }
 
+        [HttpPatch("edit-user/{userId}")]
+        public async Task<IActionResult> EditUser(string userId, [FromBody] UserEditRequest request)
+        {
+            request.UserId = userId;
+
+            var result = await _userManagmentService.EditUser(request);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors.Select(e => new { e.Code, e.Description }));
+
+            return Ok("تم تعديل بيانات المستخدم بنجاح");
+        }
+
     }
 }

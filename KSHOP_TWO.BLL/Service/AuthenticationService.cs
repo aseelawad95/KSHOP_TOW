@@ -121,7 +121,7 @@ namespace KSHOP_TWO.BLL.Service
         issuer: _configuration["Jwt:Issuer"],
         audience: _configuration["Jwt:Audience"],
         claims: userClaims,
-        expires: DateTime.UtcNow.AddMinutes(30),
+        expires: DateTime.UtcNow.AddDays(30),
         signingCredentials: credentials
         );
 

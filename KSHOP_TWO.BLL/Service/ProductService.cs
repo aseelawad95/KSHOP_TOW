@@ -4,6 +4,9 @@ using KSHOP_TWO.DAL.DTO.Response;
 using KSHOP_TWO.DAL.Models;
 using KSHOP_TWO.DAL.Repository;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
+using Real_Estate.BLL.Services.FavoriteSer;
+using Real_Estate.DAL.Repository.FavoriteRepo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +20,14 @@ namespace KSHOP_TWO.BLL.Service
     {
         private readonly IProductRepository _productRepository;
         private readonly IFileService _fileService;
+        private readonly IFavoriteRepository _favoriteRepository;
 
-        public ProductService(IProductRepository productRepository, IFileService fileService)
+
+        public ProductService(IProductRepository productRepository, IFileService fileService, IFavoriteRepository favoriteRepository)
         {
             _productRepository = productRepository;
             _fileService = fileService;
+            _favoriteRepository = favoriteRepository;
         }
 
 
@@ -49,52 +55,58 @@ namespace KSHOP_TWO.BLL.Service
         }
 
 
-        public async Task<PaginstionPesponse<ProductResponse>> GetAllProducts(ProductFilterRequest request)
+        public async Task<PaginstionPesponse<ProductResponse>> GetAllProducts(ProductFilterRequest request, string? currentUserId)
         {
             var query = _productRepository.GetQuerable(
                 p => p.Status == EntityStatus.Active,
                 new string[]
                 {
-            nameof(Product.Translations),
-            nameof(Product.CreatedBy),
-            nameof(Product.ProductImages),
+                  nameof(Product.Translations),
+                  nameof(Product.CreatedBy),
+                  nameof(Product.ProductImages),
                 });
-
             if (request.Search != null)
                 query = query.Where(p => p.Translations.Any(t => t.Name.Contains(request.Search)));
-
             if (request.CategoryId.HasValue)
                 query = query.Where(p => p.CategoryId == request.CategoryId);
-
             if (request.MinPrice.HasValue)
                 query = query.Where(p => p.Price >= request.MinPrice);
-
             if (request.MaxPrice.HasValue)
                 query = query.Where(p => p.Price <= request.MaxPrice);
-
             if (request.MinRate.HasValue)
                 query = query.Where(p => p.Rate >= request.MinRate.Value);
-
             var paginated = await query.ToPaginationAsync(request.Page, request.Limit);
 
             var responseData = paginated.Data.Adapt<List<ProductResponse>>();
 
+
+            HashSet<int> likedProductIds = new HashSet<int>();
+            if (!string.IsNullOrEmpty(currentUserId) && paginated.Data.Any())
+            {
+                var productIds = paginated.Data.Select(p => p.Id).ToList();
+
+                var favorites = await _favoriteRepository.GetAllAsync(
+                    f => f.UserId == currentUserId && productIds.Contains(f.ProductId)
+                );
+
+                likedProductIds = favorites.Select(f => f.ProductId).ToHashSet();
+            }
+            // =======================================
+
             foreach (var product in responseData)
             {
                 if (!string.IsNullOrEmpty(product.MainImage))
-
                     product.MainImage = _fileService.GetImageUrl(product.MainImage);
+
                 if (product.SubImages != null)
                 {
-                    if (product.SubImages != null)
-                    {
-                        product.SubImages = product.SubImages
-                            .Select(img => !string.IsNullOrEmpty(img) ? _fileService.GetImageUrl(img) : img)
-                            .ToList();
-                    }
+                    product.SubImages = product.SubImages
+                        .Select(img => !string.IsNullOrEmpty(img) ? _fileService.GetImageUrl(img) : img)
+                        .ToList();
                 }
-            }
 
+                product.IsFavourite = likedProductIds.Contains(product.Id);   
+            }
             return new PaginstionPesponse<ProductResponse>
             {
                 Data = responseData,
@@ -104,7 +116,7 @@ namespace KSHOP_TWO.BLL.Service
             };
         }
 
-        public async Task<ProductGetOneResponse> GetProduct(Expression<Func<Product, bool>> filter)
+        public async Task<ProductGetOneResponse> GetProduct(Expression<Func<Product, bool>> filter, string? currentUserId)
         {
             var product = await _productRepository.GetOne(filter,
                 new string[]
@@ -123,6 +135,13 @@ namespace KSHOP_TWO.BLL.Service
                     .ToList();
             }
             response.MainImage = _fileService.GetImageUrl(product.MainImage);
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                var favorite = await _favoriteRepository.GetOne(
+                    f => f.ProductId == product.Id && f.UserId == currentUserId
+                );
+                response.IsFavourite = favorite != null;   
+            }
             return response;
         }
 

@@ -21,5 +21,7 @@ namespace KSHOP_TWO.DAL.DTO.Response
 
         public List<string> SubImages { get; set; }
 
+        public bool IsFavourite { get; set; }
+
     }
 }

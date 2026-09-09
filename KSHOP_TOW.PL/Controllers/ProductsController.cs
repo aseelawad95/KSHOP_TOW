@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using System.Security.Claims;
 
 namespace KSHOP_TOW.PL.Controllers
 {
@@ -26,21 +27,29 @@ namespace KSHOP_TOW.PL.Controllers
 
         public async Task<IActionResult> Index([FromQuery] ProductFilterRequest request)
         {
-              var products = await _productService.GetAllProducts(request);
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"CLAIM ==> Type: '{claim.Type}'  Value: '{claim.Value}'");
+            }
 
+            var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"===> currentUserId = '{currentUserId}'");
+
+            var products = await _productService.GetAllProducts(request, currentUserId);
             return Ok(products);
+
         }
 
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetOneProduct(int id)
         {
-            var product = await _productService.GetProduct(p=> p.Id == id);
+            var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var product = await _productService.GetProduct(p => p.Id == id, currentUserId);
             if (product == null)
             {
                 return NotFound();
             }
-
             return Ok(product);
         }
 
