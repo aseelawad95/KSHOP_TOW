@@ -42,6 +42,7 @@ namespace KSHOP_TOW.PL.Controllers
         public async Task<IActionResult> GetCart()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"### GET CART USERID: [{userId}] ###");
             var result = await _cartService.GetCart(userId);
             return Ok(result);
         }

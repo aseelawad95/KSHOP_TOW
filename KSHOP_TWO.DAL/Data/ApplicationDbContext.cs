@@ -40,6 +40,10 @@ namespace KSHOP_TWO.DAL.Data
         public DbSet<Review> Reviews { get; set; }
 
         public DbSet<Favorite> Favorites { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
+        public DbSet<DeviceToken> DeviceTokens { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
             IHttpContextAccessor httpContextAccessor  
             ) : base(options)
@@ -94,6 +98,20 @@ namespace KSHOP_TWO.DAL.Data
              .HasIndex(o => new { o.UserId, o.IdempotencyKey })
              .IsUnique()
              .HasFilter("[IdempotencyKey] IS NOT NULL");
+
+            builder.Entity<Notification>(e =>
+            {
+                e.Property(n => n.Type).HasConversion<string>().HasMaxLength(50);
+                e.Property(n => n.Title).HasMaxLength(200);
+                e.Property(n => n.Message).HasMaxLength(1000);
+                e.HasIndex(n => new { n.UserId, n.IsRead });
+            });
+
+            builder.Entity<DeviceToken>(e =>
+            {
+                e.Property(t => t.Token).HasMaxLength(512);
+                e.HasIndex(t => t.Token).IsUnique();
+            });
 
 
         }

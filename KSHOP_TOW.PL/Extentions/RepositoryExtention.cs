@@ -28,6 +28,11 @@ namespace KSHOP_TOW.PL.Extentions
             Services.AddScoped<IFavoriteService, FavoriteService>();
             Services.AddScoped<IReviewRepository, ReviewRepository>();
             Services.AddScoped<IRewiewService, KSHOP_TWO.BLL.Service.ReviewService>();
+
+            Services.AddScoped<INotificationRepository, NotificationRepository>();
+            Services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+            Services.AddScoped<INotificationService, NotificationService>();
+
             Services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
             StripeConfiguration.ApiKey = Configuration["Stripe:SecretKey"];
 

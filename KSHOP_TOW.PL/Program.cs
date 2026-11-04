@@ -1,5 +1,7 @@
 
 using KSHOP_TOW.PL.Extentions;
+using KSHOP_TOW.PL.Middleware;
+using KSHOP_TWO.BLL.Hubs;
 using KSHOP_TWO.BLL.MappingConfig;
 using KSHOP_TWO.BLL.Service;
 using KSHOP_TWO.DAL.Models;
@@ -13,11 +15,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
+using Serilog;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Serilog;
-using KSHOP_TOW.PL.Middleware;
 
 
 namespace KSHOP_TOW.PL
@@ -81,6 +82,13 @@ namespace KSHOP_TOW.PL
 
             builder.Services.AddScoped<ISeedData, RoleSeedData>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+            // SignalR
+            builder.Services.AddSignalR();
+
+            // Firebase
+            var firebasePath = builder.Configuration["Firebase:ServiceAccountPath"]
+                               ?? "firebase-service-account.json";
+
 
             var app = builder.Build();
 
@@ -100,6 +108,8 @@ namespace KSHOP_TOW.PL
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            app.MapHub<NotificationHub>("/hubs/notifications");
 
             app.UseMiddleware<GlobalExceptionHandling>();
 

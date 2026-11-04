@@ -64,6 +64,9 @@ namespace KSHOP_TWO.BLL.Service
          $"{nameof(Cart.Product)}.{nameof(Product.Translations)}"
                 }
                 );
+
+            Console.WriteLine($"[Checkout] UserId = '{UserId}', cart count = {cartItems.Count()}");
+
             if (!cartItems.Any())
             {
                 return new CheckoutResponse
